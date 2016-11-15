@@ -58,6 +58,39 @@ void main()
 		vec2 vPos = particlesA[index].pos.xy;
     vec2 vVel = particlesA[index].vel.xy;
 
+    vec2 ctr, v1, v2, v3;
+    float k1=0.0, k2=0.0, k3=0.0;
+    for (int i = 0; i < ubo.particleCount; i++) {
+      if (i == index)
+        continue;
+
+      float dist = length(particlesA[i].pos.xy - vPos);
+
+      if (dist < ubo.rule1Distance) {
+        ctr += particlesA[i].pos.xy;
+        k1++;
+      }
+
+      if (dist < ubo.rule2Distance) {
+        v2 += vPos - particlesA[i].pos.xy;
+        k2++;
+      }
+
+      if (dist < ubo.rule3Distance) {
+        v3 += particlesA[i].vel.xy;
+        k3++;
+      }
+    }
+
+    vec2 dVel;
+    if (k1 > 0)
+      dVel += ubo.rule1Scale * (ctr/k1 - vPos);
+    if (k2 > 0)
+      dVel += ubo.rule2Scale * v2;
+    if (k3 > 0)
+      dVel += ubo.rule3Scale * (v3/k3 - vVel);
+    vVel += dVel;
+
 		// clamp velocity for a more pleasing simulation.
 		vVel = normalize(vVel) * clamp(length(vVel), 0.0, 0.1);
 
